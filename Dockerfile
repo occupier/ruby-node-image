@@ -1,4 +1,4 @@
-FROM cimg/ruby:3.1.2-node
+FROM cimg/ruby:3.1.3-node
 
 RUN sudo apt-get update && sudo apt-get install -y --no-install-recommends \
   postgresql-client \
