@@ -8,7 +8,7 @@ RUN [[ $(uname -m) == "x86_64" ]] && ARCH="x64" || ARCH="arm64" && \
   rm node.tar.xz && \
   sudo ln -s /usr/local/bin/node /usr/local/bin/nodejs
 
-ENV YARN_VERSION=1.22.19
+ENV YARN_VERSION=1.22.22
 RUN curl -L -o yarn.tar.gz "https://yarnpkg.com/downloads/${YARN_VERSION}/yarn-v${YARN_VERSION}.tar.gz" && \
   sudo tar -xzf yarn.tar.gz -C /opt/ && \
   rm yarn.tar.gz && \
