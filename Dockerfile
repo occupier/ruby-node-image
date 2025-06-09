@@ -8,12 +8,8 @@ RUN [[ $(uname -m) == "x86_64" ]] && ARCH="x64" || ARCH="arm64" && \
   rm node.tar.xz && \
   sudo ln -s /usr/local/bin/node /usr/local/bin/nodejs
 
-ENV YARN_VERSION=1.22.22
-RUN curl -L -o yarn.tar.gz "https://yarnpkg.com/downloads/${YARN_VERSION}/yarn-v${YARN_VERSION}.tar.gz" && \
-  sudo tar -xzf yarn.tar.gz -C /opt/ && \
-  rm yarn.tar.gz && \
-  sudo ln -s /opt/yarn-v${YARN_VERSION}/bin/yarn /usr/local/bin/yarn && \
-  sudo ln -s /opt/yarn-v${YARN_VERSION}/bin/yarnpkg /usr/local/bin/yarnpkg
+ENV YARN_VERSION=4.9.2
+RUN corepack enable && yarn set version $YARN_VERSION && yarn --version
 
 RUN sudo apt-get update && sudo apt-get install -y --no-install-recommends \
   postgresql-client \
