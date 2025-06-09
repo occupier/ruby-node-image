@@ -1,7 +1,7 @@
 FROM cimg/ruby:3.3.6
 
 # manually install node lts
-ENV NODE_VERSION=22.11.0
+ENV NODE_VERSION=22.16.0
 RUN [[ $(uname -m) == "x86_64" ]] && ARCH="x64" || ARCH="arm64" && \
   curl -L -o node.tar.xz "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${ARCH}.tar.xz" && \
   sudo tar -xJf node.tar.xz -C /usr/local --strip-components=1 && \
