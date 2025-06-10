@@ -9,7 +9,7 @@ RUN [[ $(uname -m) == "x86_64" ]] && ARCH="x64" || ARCH="arm64" && \
   sudo ln -s /usr/local/bin/node /usr/local/bin/nodejs
 
 ENV YARN_VERSION=4.9.2
-RUN corepack enable
+RUN corepack enable && corepack install -g yarn@$YARN_VERSION && yarn --version
 
 RUN sudo apt-get update && sudo apt-get install -y --no-install-recommends \
   postgresql-client \
