@@ -8,7 +8,7 @@ RUN [[ $(uname -m) == "x86_64" ]] && ARCH="x64" || ARCH="arm64" && \
   rm node.tar.xz && \
   sudo ln -s /usr/local/bin/node /usr/local/bin/nodejs
 
-ENV YARN_VERSION=4.9.2
+ENV YARN_VERSION=4.17.0
 RUN corepack enable && corepack install -g yarn@$YARN_VERSION && yarn --version
 
 RUN sudo apt-get update && sudo apt-get install -y --no-install-recommends \
