@@ -1,4 +1,4 @@
-FROM cimg/ruby:4.0.5
+FROM cimg/ruby:4.0.9
 
 # manually install node lts
 ENV NODE_VERSION=24.22.2
