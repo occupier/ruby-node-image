@@ -22,4 +22,4 @@ RUN sudo apt-get clean
 RUN sudo rm -rf /var/lib/apt/lists/*
 
 ENV LD_PRELOAD="libjemalloc.so.2" \
-  RUBY_JYIT_ENABLE="1"
+  RUBY_YJIT_ENABLE="1"
