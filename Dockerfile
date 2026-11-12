@@ -8,8 +8,11 @@ RUN [[ $(uname -m) == "x86_64" ]] && ARCH="x64" || ARCH="arm64" && \
   rm node.tar.xz && \
   sudo ln -s /usr/local/bin/node /usr/local/bin/nodejs
 
+# corepack is no longer bundled with node as of v25, so install it from npm
+RUN sudo npm install -g corepack && sudo corepack enable
+
 ENV YARN_VERSION=4.17.1
-RUN corepack enable && corepack install -g yarn@$YARN_VERSION && yarn --version
+RUN corepack install -g yarn@$YARN_VERSION && yarn --version
 
 RUN sudo apt-get update && sudo apt-get install -y --no-install-recommends \
   postgresql-client \
