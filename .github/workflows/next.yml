@@ -26,10 +26,19 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Compute image tags
+        id: tags
+        run: |
+          {
+            echo "tags<<EOF"
+            .github/scripts/image-tags.sh next next-
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Build and push
         uses: docker/build-push-action@v7
         with:
           context: .
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/occupier/ruby-node:next
+          tags: ${{ steps.tags.outputs.tags }}
