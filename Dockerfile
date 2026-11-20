@@ -1,7 +1,7 @@
 FROM cimg/ruby:4.0.5
 
 # manually install node lts
-ENV NODE_VERSION=24.17.0
+ENV NODE_VERSION=24.22.2
 RUN [[ $(uname -m) == "x86_64" ]] && ARCH="x64" || ARCH="arm64" && \
   curl -L -o node.tar.xz "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${ARCH}.tar.xz" && \
   sudo tar -xJf node.tar.xz -C /usr/local --strip-components=1 && \
@@ -22,4 +22,4 @@ RUN sudo apt-get clean
 RUN sudo rm -rf /var/lib/apt/lists/*
 
 ENV LD_PRELOAD="libjemalloc.so.2" \
-  RUBY_JYIT_ENABLE="1"
+  RUBY_YJIT_ENABLE="1"
