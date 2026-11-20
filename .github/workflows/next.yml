@@ -1,17 +1,98 @@
 name: Next Version
+run-name: build ${{ inputs.tag }}
+
+# The versions are inputs, not constants. A dispatch carries them; a push to next reuses
+# the versions labelled on the published :next image (scripts/read-labels.sh).
+#
+# This file is the same on main and next. workflow_dispatch has to be defined on the
+# default branch, but main's Dockerfile ignores these inputs, so the job runs only on the
+# next ref (dispatch with --ref next).
 
 on:
   push:
     branches:
       - next
   workflow_dispatch:
+    inputs:
+      ruby_version:
+        description: "Ruby patch version of the cimg/ruby base image, for example 4.0.10"
+        required: true
+        type: string
+      node_version:
+        description: "Node major (26, resolved to the latest patch) or exact version (26.13.1)"
+        required: true
+        type: string
+      yarn_version:
+        description: "Yarn version installed through corepack, for example 4.18.1"
+        required: true
+        type: string
+      tag:
+        description: "Image tag: next, or exactly ruby-<ruby>-node-<node>-yarn-<yarn> from the three inputs"
+        required: true
+        type: string
+      promote:
+        description: "Also move the :next tag to this build"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   docker:
+    if: github.ref == 'refs/heads/next'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
+      # Inputs reach the shell only through env, never by interpolation into the script.
+      - name: Choose versions and tags
+        id: plan
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_RUBY_VERSION: ${{ inputs.ruby_version }}
+          INPUT_NODE_VERSION: ${{ inputs.node_version }}
+          INPUT_YARN_VERSION: ${{ inputs.yarn_version }}
+          INPUT_TAG: ${{ inputs.tag }}
+          INPUT_PROMOTE: ${{ inputs.promote }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            ruby=$INPUT_RUBY_VERSION
+            node=$INPUT_NODE_VERSION
+            yarn=$INPUT_YARN_VERSION
+            tag=$INPUT_TAG
+            promote=$INPUT_PROMOTE
+          else
+            labels=$(scripts/read-labels.sh ghcr.io/occupier/ruby-node:next)
+            ruby=$(sed -n 's/^ruby_version=//p' <<<"$labels")
+            node=$(sed -n 's/^node_version=//p' <<<"$labels")
+            yarn=$(sed -n 's/^yarn_version=//p' <<<"$labels")
+            tag=next
+            promote=false
+          fi
+          scripts/check-tag.sh "$tag" "$ruby" "$node" "$yarn"
+          node_exact=$(scripts/resolve-node.sh "$node")
+          tags=$(scripts/compute-tags.sh "$tag" "$promote" | sed 's|^|ghcr.io/occupier/ruby-node:|')
+          {
+            echo "ruby_version=$ruby"
+            echo "node_version=$node_exact"
+            echo "yarn_version=$yarn"
+            echo "tags<<TAGS_EOF"
+            echo "$tags"
+            echo "TAGS_EOF"
+          } >>"$GITHUB_OUTPUT"
+          {
+            echo "Building Ruby $ruby, Node $node_exact, Yarn $yarn"
+            echo
+            echo '```'
+            echo "$tags"
+            echo '```'
+          } >>"$GITHUB_STEP_SUMMARY"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
@@ -32,4 +113,8 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/occupier/ruby-node:next
+          tags: ${{ steps.plan.outputs.tags }}
+          build-args: |
+            RUBY_VERSION=${{ steps.plan.outputs.ruby_version }}
+            NODE_VERSION=${{ steps.plan.outputs.node_version }}
+            YARN_VERSION=${{ steps.plan.outputs.yarn_version }}
